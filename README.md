@@ -3,6 +3,7 @@
 <div align="center">
 
 [![Python Version](https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Orchestration Framework](https://img.shields.io/badge/Orchestration-LangChain%20%7C%20LCEL-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![System Architecture](https://img.shields.io/badge/Architecture-System%201%2F2%20Hybrid%20RAG-8A2BE2?style=for-the-badge&logo=diagram&logoColor=white)](#-system-architecture--deep-dive)
 [![UI Framework](https://img.shields.io/badge/UI-Streamlit%201.35%2B-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Vector Store](https://img.shields.io/badge/Vector%20Store-ChromaDB%20%7C%20FAISS-00ADD8?style=for-the-badge&logo=database&logoColor=white)](https://www.trychroma.com/)
@@ -14,7 +15,7 @@
 <br/>
 
 <p align="center">
-  <strong>An enterprise-grade, high-throughput financial decision and customer support platform combining Kahneman System 1 deterministic fast-path classification, hybrid tabular + unstructured fraud risk correlation, intent-gated policy RAG, and multi-stage observability.</strong>
+  <strong>An enterprise-grade, high-throughput financial decision and customer support platform built on LangChain (LCEL), combining Kahneman System 1 deterministic fast-path classification, hybrid tabular + unstructured fraud risk correlation, intent-gated policy RAG, and multi-stage observability.</strong>
 </p>
 
 [Executive Summary](#-executive-summary--the-fintech-cognitive-trilemma) • [Core Pillars](#-core-engineering-pillars) • [System Architecture](#-system-architecture--deep-dive) • [Tech Stack & ADRs](#-technical-stack--architectural-decision-records-adrs) • [Quality Flywheel](#-production-benchmarks--quality-flywheel) • [Quickstart Guide](#-quickstart--deployment) • [Security & Compliance](#-security-compliance--governance)
@@ -164,6 +165,7 @@ sequenceDiagram
 
 | Component | Selected Technology | Alternative Considered | Architectural Rationale & Trade-off Analysis |
 | :--- | :--- | :--- | :--- |
+| **RAG Orchestration Framework** | **LangChain & LCEL (LangChain Expression Language)** | LlamaIndex / Raw API wrappers | Standardized declarative chain runnables, multi-provider model abstractions (Google GenAI, OpenAI, Groq, NVIDIA), chat history state, and vector store connectors. |
 | **Generative LLM Serving** | **NVIDIA NIM / Gemini 2.0 / OpenAI** | Self-hosted vLLM / Ollama | Provides production-ready enterprise SLA, optimized TTFT (Time-To-First-Token), and multi-provider redundancy. |
 | **System 1 Decision Engine** | **OpenRouter / JEV Engine** | Fine-tuned DeBERTa-v3 | Sub-100ms structured JSON decision-making with schema adherence; instant zero-shot category adaptability. |
 | **Dense Embeddings** | **`all-MiniLM-L6-v2` (SentenceTransformers)** | OpenAI `text-embedding-3-small` | 384-dimensional dense vectors with ~15ms local CPU execution; zero external network dependencies or data privacy leakage. |
