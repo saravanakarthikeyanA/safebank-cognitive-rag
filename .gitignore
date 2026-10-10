@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# OS-specific
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Databases & Vector Stores (Local runtime artifacts)
+*.db
+*.sqlite3
+data/chroma_db/
+data/faiss_index/
+
+# Large Model Binary files
+*.joblib
+*.pkl
+
+# Environments / Secrets
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+
+# Generated Documents & Walkthroughs
+*.pdf

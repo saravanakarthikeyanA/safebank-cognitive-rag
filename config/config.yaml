@@ -1,0 +1,52 @@
+llm:
+  provider: "nvidia"        # options: "gemini", "groq", "ollama", "openai", "nvidia"
+  model: "openai/gpt-oss-20b"
+  temperature: 0.1
+  max_tokens: 300           # Output token budget for concise, safe responses
+
+token_budget:
+  enabled: true
+  max_output_tokens: 250
+  max_context_tokens: 450   # Max token ceiling for retrieved RAG policy documents
+  max_history_tokens: 200   # Max token ceiling for conversation history
+  max_chunks_retrieved: 2   # Number of chunks to retrieve for domain queries
+  rate_limiting:
+    enabled: true
+    max_requests_per_minute: 15
+    min_request_interval_seconds: 1.0
+
+guardrails:
+  enabled: true
+  block_on_detection: true
+  log_security_events: true
+  security_block_message: "Your request contains unauthorized instructions or commands that violate banking security protocols. This interaction has been logged for security review."
+
+embedding:
+  provider: "huggingface"   # options: "huggingface", "gemini", "openai"
+  model: "all-MiniLM-L6-v2"
+
+vector_store:
+  provider: "chroma"        # options: "chroma", "faiss"
+  persist_directory: "data/chroma_db"
+
+classifiers:
+  intent: "jev"             # pure JEV System 1 intent engine
+  fraud: "jev"              # pure JEV System 1 hybrid fraud engine
+
+
+jev:
+  provider: "openrouter"
+  base_url: "https://openrouter.ai/api/v1"
+  model: "typesafe/jev-router"
+  timeout_seconds: 15.0
+  max_retries: 3
+  retry_backoff_factor: 1.0
+  thresholds:
+    fraud_high_risk: 0.80
+    fraud_medium_risk: 0.45
+    intent_min_confidence: 0.60
+    emergency_block_threshold: 0.90
+
+
+database:
+  connection_string: "sqlite:///data/banking_system.db"
