@@ -25,82 +25,41 @@
 
 ## 📌 Executive Summary: The Fintech Cognitive Trilemma
 
-Modern digital banking infrastructure processes hundreds of millions of user queries and transaction telemetry points daily. Conventional generative AI support implementations consistently encounter the **Fintech Cognitive Trilemma**:
+Modern digital banking infrastructure processes hundreds of millions of user queries and transaction telemetry points daily. Conventional generative AI support implementations encounter the **Fintech Cognitive Trilemma**:
 
-```
-                         ┌─────────────────────────────────┐
-                         │   1. ZERO-HALLUCINATION POLICY  │
-                         │   COMPLIANCE (Strict Grounding) │
-                         └───────────────┬─────────────────┘
-                                         │
-                                         │
-                 ▲                       │                       ▲
-                ╱ ╲                      │                      ╱ ╲
-               ╱   ╲                     │                     ╱   ╲
-              ╱     ╲                    │                    ╱     ╲
-             ╱       ╲                   │                   ╱       ╲
-            ╱         ╲                  │                  ╱         ╲
-           ╱           ╲                 │                 ╱           ╲
-┌─────────┴─────────────┴─────────┐      │      ┌─────────┴─────────────┴─────────┐
-│ 2. ULTRA-LOW LATENCY INFERENCE  │◄─────┴─────►│ 3. REAL-TIME FRAUD CORRELATION  │
-│ (Sub-100ms Fast Decision Path)  │             │ (Tabular Telemetry + Text Claims│
-└─────────────────────────────────┘             └─────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["1. Zero-Hallucination Policy Compliance<br/>(Strict Regulatory Grounding)"]
+    B["2. Ultra-Low Latency Inference<br/>(Sub-100ms Deterministic Path)"]
+    C["3. Real-Time Fraud Correlation<br/>(Telemetry + Text Claims)"]
+
+    A --- B
+    B --- C
+    C --- A
 ```
 
 1. **Strict Compliance & Hallucination Vulnerability**: Standard LLMs hallucinate loan APRs, chargeback time windows, and KYC rules, creating severe regulatory exposure under RBI, FDIC, and GDPR regimes.
-2. **Compute Bottlenecks & Token Latency**: Routing routine inquiries (e.g., greetings, balance FAQs) through large autoregressive models creates $2–5\text{s}$ response lag and inflates inference costs by $80\times$.
+2. **Compute Bottlenecks & Token Latency**: Routing routine inquiries (e.g., greetings, balance FAQs) through large autoregressive models creates 2 to 5 second response lag and inflates inference costs by up to 80x.
 3. **Tabular-Text Isolation in Fraud Detection**: Traditional fraud models inspect tabular feature stores in isolation from customer claims, while conversational bots have zero visibility into transaction-level velocity spikes, geolocation anomalies, or international flags.
 
 ### The Solution: Two-Tier Cognitive Hybrid Architecture
 
-**SafeBank AI** models human cognition (Daniel Kahneman's *Thinking, Fast and Slow*):
-* **System 1 (Intuitive & Deterministic Fast-Path $\sim 50\text{--}150\text{ms}$)**: Concurrently dispatches lightweight classification models via OpenRouter schema constraints to categorize intent, calibrate sentiment urgency, and fuse tabular SQL transaction telemetry with text claims into real-time operational actions (`Block Card`, `Escalate Ticket`, `Request Documents`).
-* **System 2 (Contextual Generative Synthesis)**: Executes intent-gated vector retrieval over versioned bank policies (ChromaDB / FAISS), applies recursive token budget compaction, and synthesizes grounded, policy-compliant guidance via generative LLMs (NVIDIA NIM, Google Gemini, OpenAI).
+**SafeBank AI** models human cognition:
+* **System 1 (Deterministic Fast-Path ~50-150ms)**: Concurrently dispatches lightweight classification models to categorize intent, calibrate sentiment urgency, and fuse tabular SQL transaction telemetry with text claims into real-time operational actions (`Block Card`, `Escalate Ticket`, `Request Documents`).
+* **System 2 (Contextual Generative Synthesis)**: Executes intent-gated vector retrieval over versioned bank policies (ChromaDB / FAISS), applies recursive token budget compaction, and synthesizes grounded, policy-compliant guidance via generative LLMs.
 
 ---
 
 ## ⚡ Core Engineering Pillars
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                    SAFEBANK AI SYSTEM MATRIX                                     │
-├───────────────────────────────┬───────────────────────────────┬──────────────────────────────────┤
-│ 🧠 Dual-Track System 1/2      │ 🎯 Intent-Gated Hybrid RAG    │ 🔍 Hybrid Multi-Modal Fraud Risk │
-│ Concurrent ThreadPoolExecutor │ Dynamic category routing with │ Fuses SQL tabular telemetry      │
-│ for sub-100ms intent,         │ dense HNSW indexing, zero     │ (velocity, geo-anomaly, amount)  │
-│ sentiment, & fraud decisions. │ context poisoning & pruning.  │ with natural language claims.    │
-├───────────────────────────────┼───────────────────────────────┼──────────────────────────────────┤
-│ 🛡️ Multi-Layer Defense Guard  │ 📊 End-to-End Observability   │ 🧪 Automated Quality Flywheel    │
-│ 4-tier regex & heuristic      │ Span-level latency telemetry, │ Automated LLM-as-a-Judge eval    │
-│ scanner blocking injection &  │ token accounting, & audited   │ scoring Groundedness, Recall, &  │
-│ structural boundary escapes.  │ SQLite / Postgres sync.       │ Semantic Cosine Relevance.       │
-└───────────────────────────────┴───────────────────────────────┴──────────────────────────────────┘
-```
-
-### 1. 🏎️ Parallel System 1 Decisioning Engine
-Incoming user requests are received by a multi-threaded execution pool (`ThreadPoolExecutor(max_workers=2)`):
-* **Intent & Sentiment Evaluation**: Classifies user queries into 5 mutually exclusive banking categories (`Fraud/Unauthorized`, `Loan`, `KYC`, `Account Access`, `General`) and 3 sentiment states (`Neutral`, `Urgent`, `Frustrated`) with RLCD-calibrated confidence.
-* **Hybrid Fraud Decisioning**: Fetches live transaction metadata from SQL, evaluates tabular flags against customer claims, computes calibrated risk probabilities, and returns explicit operational actions.
-* **Resilient Rule Fallbacks**: If the OpenRouter inference gateway encounters network timeouts or rate limits, the system seamlessly transitions to deterministic rule-based heuristic engines without failing user requests.
-
-### 2. 🎯 Intent-Gated Adaptive Context Retrieval
-Standard RAG architectures suffer from *context poisoning* when irrelevant policy documents dilute the model prompt. SafeBank AI dynamically applies category-filtered vector queries:
-$$\text{Query Filter} = \{\text{Category} = \text{Intent}(\text{Query})\}$$
-* **Domain Queries** (`Loan`, `KYC`, `Fraud`): Filtered semantic search fetches the top $K=2$ policy chunks ($\le 450\text{ tokens}$).
-* **General Queries** (greetings, off-topic inquiries): Automatically bypass the vector database, eliminating unnecessary vector distance calculations and saving downstream context tokens.
-
-### 3. 🛡️ Multi-Layer Defense-in-Depth Guardrails
-A dedicated pre-execution scanner screens every inbound payload across four critical threat vectors:
-1. **Instruction Override Attacks**: Detects regex patterns attempting to override system constraints (e.g., `ignore previous instructions`, `bypass verification`).
-2. **Persona Hijacking & Jailbreaks**: Identifies roleplay exploits (e.g., `DAN mode`, `developer mode`, `unrestricted AI`).
-3. **System Prompt Exfiltration**: Intercepts attempts to leak meta-prompts, internal system tags, or instructions.
-4. **Boundary Tag Manipulation**: Neutralizes XML/HTML delimiter injections (`<untrusted_customer_input>`, `<system_instruction>`) and strips control characters.
-
-### 4. 📈 Token Budgeting & Sliding History Memory
-To avoid out-of-memory errors and minimize operational inference costs:
-* **Context Ceiling**: Retrieved policy snippets are strictly budgeted to $\le 450\text{ tokens}$ using word-boundary truncation.
-* **Sliding Chat History**: Multi-turn session memory fetches the most recent turns in reverse chronological order up to a strict ceiling of $\le 200\text{ tokens}$.
-* **Token Rate Limiting**: Built-in thread-safe leaky bucket rate limiters prevent API throttling.
+| Engineering Pillar | Architecture Detail | Operational Value |
+| :--- | :--- | :--- |
+| **Dual-Track System 1/2** | Concurrent multi-threading for sub-100ms decisions | Instant response for high-frequency queries and emergency actions |
+| **Intent-Gated RAG** | Dynamic category routing with zero context dilution | High retrieval accuracy and minimal context overhead |
+| **Hybrid Fraud Risk Engine** | Fuses SQL tabular telemetry with natural language claims | Detects velocity spikes, geo-anomalies, and high-risk claims |
+| **Multi-Layer Guardrails** | 4-tier regex and heuristic scanners blocking injections | 100% defense against prompt injection & jailbreak exploits |
+| **End-to-End Observability** | Span-level latency telemetry & token accounting | Complete audit trail for regulatory compliance |
+| **Automated Quality Flywheel** | LLM-as-a-Judge benchmark scoring Groundedness & Recall | Continuous evaluation against gold-standard QA datasets |
 
 ---
 
@@ -110,99 +69,92 @@ To avoid out-of-memory errors and minimize operational inference costs:
 
 ```mermaid
 flowchart TD
-    classDef client fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
-    classDef security fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
-    classDef system1 fill:#1e1b4b,stroke:#8b5cf6,stroke-width:2px,color:#fff;
-    classDef rag fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
-    classDef system2 fill:#1f2937,stroke:#f59e0b,stroke-width:2px,color:#fff;
-    classDef persistence fill:#312e81,stroke:#6366f1,stroke-width:2px,color:#fff;
+    User["Customer / Bank Agent"] --> UI["Streamlit Web UI<br/>(Reactive State & Telemetry)"]
+    UI --> Guard{"Pre-Execution Guardrails<br/>(Regex & Injection Defense)"}
 
-    User(["👤 Customer / Bank Agent"]):::client --> UI["💻 Streamlit Web Application\n(Reactive State & Live Telemetry)"]:::client
-    UI --> Guard{"🛡️ Pre-Execution Guardrail\n(Regex & Injection Defense)"}:::security
-
-    Guard -- "❌ Malicious Input" --> SecLog["🚨 Log Security Event & Return Safe Block"]:::security
-    Guard -- "✅ Sanitized Query" --> Dispatcher["⚡ Parallel Dispatcher\n(ThreadPoolExecutor)"]:::system1
+    Guard -->|"Malicious Input"| SecLog["Log Security Event & Safe Block"]
+    Guard -->|"Sanitized Query"| Dispatcher["System 1: Parallel Dispatcher"]
 
     subgraph FastPath ["System 1: Fast Parallel Decisioning Engine (~100ms)"]
-        Dispatcher --> IntentEngine["🧠 Intent & Sentiment Classifier\n(OpenRouter JEV / Heuristic Fallback)"]:::system1
-        Dispatcher --> FraudEngine["🔍 Hybrid Fraud Risk Evaluator\n(Tabular SQL Telemetry + Text Claim)"]:::system1
+        Dispatcher --> IntentEngine["Intent & Sentiment Classifier"]
+        Dispatcher --> FraudEngine["Hybrid Fraud Risk Evaluator"]
     end
 
     subgraph DataStore ["Data & Knowledge Tier"]
-        DB[(💾 SQLite / PostgreSQL Database\n- Transactions\n- Tickets\n- Sessions\n- Audit Logs)]:::persistence
-        VectorDB[(📚 Vector Database\n- ChromaDB / FAISS\n- HuggingFace all-MiniLM-L6-v2)]:::rag
+        DB[("Relational Database<br/>(Transactions, Tickets, Logs)")]
+        VectorDB[("Vector Database<br/>(ChromaDB / FAISS)")]
     end
 
-    DB -.->|"Fetch Active Transaction State"| FraudEngine
+    DB -.->|"Active Transaction State"| FraudEngine
 
-    IntentEngine -->|"Classified Category"| Router{"🎯 Intent Filter Router"}:::rag
+    IntentEngine -->|"Classified Category"| Router{"Intent Filter Router"}
     Router -->|"Domain Query"| VectorDB
-    Router -->|"General Inquiry"| SkipRAG["⚡ Fast-Path (Skip Retrieval)"]:::rag
+    Router -->|"General Inquiry"| SkipRAG["Fast-Path (Skip Retrieval)"]
 
-    VectorDB -->|"Top-2 Policy Chunks (Max 450t)"| ContextBuffer["🧩 Token-Budgeted Context Assembler"]:::system2
+    VectorDB -->|"Top-2 Policy Chunks"| ContextBuffer["Token-Budgeted Context Assembler"]
     SkipRAG --> ContextBuffer
-    DB -.->|"Sliding History (Max 200t)"| ContextBuffer
-    FraudEngine -->|"Risk Score & Suggested Action"| ContextBuffer
+    DB -.->|"Sliding History"| ContextBuffer
+    FraudEngine -->|"Risk Score & Action"| ContextBuffer
 
-    subgraph Synthesis ["System 2: Generative Synthesis & Observability"]
-        ContextBuffer --> LLM["🤖 Generative LLM Engine\n(NVIDIA NIM / Gemini 2.0 / OpenAI)"]:::system2
-        LLM --> TokenStream["📄 Streaming Token Generator"]:::system2
+    subgraph Synthesis ["System 2: Generative Synthesis"]
+        ContextBuffer --> LLM["Generative LLM Engine<br/>(NVIDIA NIM / Gemini / OpenAI)"]
+        LLM --> TokenStream["Streaming Token Generator"]
     end
 
     TokenStream --> UI
-    TokenStream --> DBLogger["📊 Pipeline Trace Logger\n(Execution Span & Latency Sync)"]:::persistence
+    TokenStream --> DBLogger["Pipeline Trace Logger"]
     DBLogger --> DB
 ```
 
 ---
 
-### 2. Microsecond-Level Request Execution Sequence
+### 2. Request Execution Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Customer as 👤 Customer
-    participant UI as 💻 Streamlit UI
-    participant Guard as 🛡️ Guardrails
-    participant Parallel as ⚡ Parallel Executor
-    participant Intent as 🧠 Intent Classifier
-    participant Fraud as 🔍 Fraud Classifier
-    participant VDB as 📚 Vector Store
-    participant DB as 💾 SQL Database
-    participant LLM as 🤖 Generative LLM
-    participant Tracer as 📊 Session Tracer
+    actor Customer as Customer
+    participant UI as Streamlit UI
+    participant Guard as Guardrails
+    participant Parallel as Parallel Executor
+    participant Intent as Intent Classifier
+    participant Fraud as Fraud Classifier
+    participant VDB as Vector Store
+    participant DB as SQL Database
+    participant LLM as Generative LLM
+    participant Tracer as Session Tracer
 
-    Customer->>UI: Types query ("Alert: $2,400 charged in Nigeria!")
+    Customer->>UI: Submit inquiry
     UI->>Tracer: start_span("pipeline_execution")
     
     UI->>Guard: inspect_query(query)
-    Guard-->>UI: GuardrailResult(is_safe=True, sanitized_text=...)
+    Guard-->>UI: GuardrailResult(is_safe=True)
     
-    rect rgb(238, 242, 255)
+    rect rgb(240, 245, 255)
         note over Parallel, Fraud: Concurrent System 1 Execution (~100ms)
-        UI->>Parallel: submit(run_intent), submit(run_fraud)
-        Parallel->>Intent: predict(query)
-        Parallel->>DB: query(Transaction).filter_by(target_txn_id)
-        DB-->>Parallel: Transaction(amount=2400, geo_anomaly=True, is_intl=True)
-        Parallel->>Fraud: predict(target_txn_id, claim_text)
-        Intent-->>Parallel: {"category": "Fraud/Unauthorized", "sentiment": "Urgent", "confidence": 0.94}
-        Fraud-->>Parallel: {"risk_level": "High", "probability": 0.92, "suggested_action": "Block Card"}
+        UI->>Parallel: Dispatch concurrent tasks
+        Parallel->>Intent: Classify intent & sentiment
+        Parallel->>DB: Query transaction metadata
+        DB-->>Parallel: Return transaction flags
+        Parallel->>Fraud: Evaluate fraud risk & suggested action
+        Intent-->>Parallel: Return category & urgency
+        Fraud-->>Parallel: Return risk level & action
         Parallel-->>UI: Aggregated System 1 State
     end
 
-    UI->>VDB: similarity_search(query, filter={"category": "Fraud/Unauthorized"}, k=2)
-    VDB-->>UI: [fraud_handling_policy.txt snippet]
+    UI->>VDB: Filtered vector search (by Intent Category)
+    VDB-->>UI: Return top policy snippets
     
-    UI->>DB: fetch_recent_messages(session_id, max_tokens=200)
-    DB-->>UI: [Turn 1 History]
+    UI->>DB: Fetch sliding conversation history
+    DB-->>UI: Return recent turn history
 
-    UI->>LLM: stream_chat_completion(system_prompt, context_chunks, history, query)
+    UI->>LLM: Stream completion (Context + Query + History)
     loop Token Streaming
         LLM-->>UI: Yield response chunk
-        UI-->>Customer: Live Markdown Stream
+        UI-->>Customer: Live Markdown stream
     end
 
-    UI->>DB: insert into pipeline_logs (trace_json, latency_ms, intent, risk)
+    UI->>DB: Insert pipeline log & latency trace
     UI->>Tracer: end_span("pipeline_execution")
 ```
 
@@ -226,26 +178,15 @@ sequenceDiagram
 
 SafeBank AI implements an automated **Quality Flywheel** benchmark evaluated against the gold-standard dataset (`data/04_qa_pairs.json`):
 
-### Mathematical Formulation of Benchmark Metrics
+### Benchmark Performance Results
 
-1. **Faithfulness (Groundedness)**:
-   $$F = \frac{|\text{Substantiated Statements in Output}|}{|\text{Total Statements in Output}|} \in [0.0, 1.0]$$
-2. **Answer Relevance**:
-   $$AR = \text{CosineSimilarity}\left(\mathbf{E}(\text{Generated Answer}), \mathbf{E}(\text{User Query})\right)$$
-3. **Context Recall**:
-   $$CR = \frac{|\text{Ground Truth Sentences Retrieved in Context}|}{|\text{Total Ground Truth Sentences}|} \in [0.0, 1.0]$$
-4. **Semantic Cosine Similarity**:
-   $$CS = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$$
-
-### Empirical Benchmark Performance Table
-
-| Evaluation Dimension | Metric Target | SafeBank AI Benchmark Result | Evaluation Method |
+| Evaluation Dimension | Target Metric | SafeBank AI Result | Evaluation Method |
 | :--- | :---: | :---: | :--- |
-| **Grounded Faithfulness** | $> 80\%$ | **$88.5\%$** (4.42 / 5.0) | Multi-turn LLM-as-a-Judge |
-| **Answer Relevance** | $> 85\%$ | **$92.0\%$** (4.60 / 5.0) | Semantic Query Alignment |
-| **Context Recall** | $> 80\%$ | **$84.0\%$** (4.20 / 5.0) | Ground Truth Clause Overlap |
-| **System 1 Fast-Path Latency** | $< 150\text{ms}$ | **$95\text{ms}$ (P95)** | ThreadPoolExecutor Telemetry |
-| **Prompt Injection Defense** | $100\%$ | **$100.0\%$ (20/20 Test Vectors)** | `scripts/test_guardrails.py` |
+| **Grounded Faithfulness** | > 80% | **88.5%** (4.42 / 5.0) | Multi-turn LLM-as-a-Judge |
+| **Answer Relevance** | > 85% | **92.0%** (4.60 / 5.0) | Semantic Query Alignment |
+| **Context Recall** | > 80% | **84.0%** (4.20 / 5.0) | Ground Truth Clause Overlap |
+| **System 1 Fast-Path Latency** | < 150ms | **95ms (P95)** | ThreadPoolExecutor Telemetry |
+| **Prompt Injection Defense** | 100% | **100.0% (20/20 Test Vectors)** | `scripts/test_guardrails.py` |
 
 ---
 
